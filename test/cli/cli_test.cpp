@@ -2,6 +2,7 @@
 #include <gmock/gmock.h>
 
 #include <cstdlib>     // for std::system
+#include <filesystem>  // for file paths
 #include <string>      // for std::string
 #include <sstream>     // for std::ostringstream
 
@@ -45,9 +46,33 @@ struct cli_test : public ::testing::Test
 
     // Generate the full path of a test file that is provided in the data directory.
     static
-    std::string data(std::string const & filename)
+    std::filesystem::path data(std::string const & filename)
     {
-        return std::string{DATADIR}.append(filename);
+        return std::filesystem::path{std::string{DATADIR}}.concat(filename);
+    }
+
+    // Create a unique work directory for a test and return the full path for a given file name.
+    static
+    std::filesystem::path workdir(std::string const & filename)
+    {
+        // Derive unique test directory name from the test name.
+        ::testing::TestInfo const * const info = ::testing::UnitTest::GetInstance()->current_test_info();
+        std::string test_name = std::string{info->test_case_name()} + std::string{"."} + std::string{info->name()};
+        std::filesystem::path test_dir{std::string{OUTPUTDIR} + test_name};
+
+        try // Create new directory (if it does not exist).
+        {
+            std::filesystem::create_directories(test_dir);
+        }
+        catch (std::filesystem::filesystem_error err)
+        {
+            // fall back to current directory
+            std::cerr << err.what() << std::endl;
+            return std::filesystem::path{test_name + filename};
+        }
+
+        // Connect the test directory with the filename.
+        return test_dir.append(filename);
     }
 };
 
@@ -96,8 +121,8 @@ TEST_F(cli_test, with_argument_verbose)
 
 TEST_F(cli_test, with_out_file)
 {
-    cli_test_result result = execute_app("fastq_to_fasta", data("in.fastq"), "-o", data("out.fa"));
-    seqan3::sequence_file_input fin{data("out.fa"), seqan3::fields<seqan3::field::seq, seqan3::field::id>{}};
+    cli_test_result result = execute_app("fastq_to_fasta", data("in.fastq"), "-o", workdir("out.fasta"));
+    seqan3::sequence_file_input fin{workdir("out.fasta"), seqan3::fields<seqan3::field::seq, seqan3::field::id>{}};
 
     // create records to compare
     using record_type = typename decltype(fin)::record_type;

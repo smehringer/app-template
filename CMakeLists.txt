@@ -19,6 +19,12 @@ target_link_libraries ("${PROJECT_NAME}" "${PROJECT_NAME}_lib")
 # copy test data and define DATADIR
 file(COPY test/data DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/test)
 add_definitions(-DDATADIR=\"${CMAKE_CURRENT_BINARY_DIR}/test/data/\")
+
+# Directory for test output files.
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/test/output)
+add_definitions(-DOUTPUTDIR=\"${CMAKE_CURRENT_BINARY_DIR}/test/output/\")
+
+# For CLI test: Define directory of the executables.
 add_definitions(-DBINDIR=\"${CMAKE_CURRENT_BINARY_DIR}/\")
 
 # Dependency: Googletest
