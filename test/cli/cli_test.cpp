@@ -2,12 +2,12 @@
 #include <gmock/gmock.h>
 
 #include <cstdlib>     // for std::system
-#include <filesystem>  // for file paths
 #include <string>      // for std::string
 #include <sstream>     // for std::ostringstream
 
 #include <seqan3/alphabet/nucleotide/dna5.hpp>
 #include <seqan3/io/sequence_file/input.hpp>
+#include <seqan3/std/filesystem>
 #include <seqan3/std/ranges>
 
 // Provides functions for CLI test implementation.
